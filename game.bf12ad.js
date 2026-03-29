@@ -126,21 +126,22 @@ document.getElementById('right').onclick = () => ctrl(1, 0);
 
 emailForm.onsubmit = (e) => {
     e.preventDefault();
-    // 1. Wipe result text entirely 
+    
+    // 1. Wipe result text (Proxy Established)
     resultText.innerText = "";
     resultText.setAttribute('data-text', "");
     
-    // 2. Destroy the container innerHTML to prevent ghost inputs 
+    // 2. THIS FIXES THE BUG: Hide the entire flex container
     const nameContainer = document.getElementById('nameFieldsContainer');
-    if(nameContainer) nameContainer.innerHTML = "";
+    if (nameContainer) nameContainer.style.display = 'none';
     
-    // 3. Hide all remaining elements 
+    // 3. Hide the remaining form elements
     document.getElementById('emailInput').style.display = 'none';
     document.getElementById('submitBtn').style.display = 'none';
     document.getElementById('sub-text').style.display = 'none';
     document.getElementById('legalNotice').style.display = 'none';
     
-    // 4. Show final aggressive glitch message [cite: 2, 3]
+    // 4. Show aggressive red glitch confirmation
     document.getElementById('confirmation-msg').style.display = 'block';
 };
 
