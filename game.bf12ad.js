@@ -132,12 +132,14 @@ document.getElementById('right').onclick = () => ctrl(1, 0);
 
 emailForm.onsubmit = (e) => {
     e.preventDefault();
+    // Hide all input elements
     document.getElementById('firstName').style.display = 'none';
     document.getElementById('lastName').style.display = 'none';
     document.getElementById('emailInput').style.display = 'none';
     document.getElementById('submitBtn').style.display = 'none';
     document.getElementById('sub-text').style.display = 'none';
     document.getElementById('legalNotice').style.display = 'none';
+    // Show confirmation
     document.getElementById('confirmation-msg').style.display = 'block';
 };
 
