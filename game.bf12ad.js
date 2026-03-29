@@ -132,6 +132,9 @@ document.getElementById('right').onclick = () => ctrl(1, 0);
 
 emailForm.onsubmit = (e) => {
     e.preventDefault();
+    // Wipe result text (Proxy Established)
+    resultText.innerText = "";
+    resultText.setAttribute('data-text', "");
     // Hide all input elements
     document.getElementById('firstName').style.display = 'none';
     document.getElementById('lastName').style.display = 'none';
@@ -139,7 +142,7 @@ emailForm.onsubmit = (e) => {
     document.getElementById('submitBtn').style.display = 'none';
     document.getElementById('sub-text').style.display = 'none';
     document.getElementById('legalNotice').style.display = 'none';
-    // Show confirmation
+    // Show aggressive red glitch confirmation
     document.getElementById('confirmation-msg').style.display = 'block';
 };
 
