@@ -3,143 +3,147 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Proxy Marketing AI | Coming Soon</title>
-    
-    <link rel="stylesheet" href="https://use.typekit.net/pmk7ptm.css">
-    
-    <link rel="stylesheet" href="style.css?v=1.4">
+    <title>PROXY MARKETING AI // THE GRID</title>
+    <style>
+        /* GLOBAL RESET: Prevents "off-screen" overflow */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #000;
+            color: #00f2ff;
+            font-family: 'Courier New', monospace;
+            overflow: hidden; /* Keeps the game contained */
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* THE MODAL OVERLAY */
+        #modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            display: none; /* Controlled by JS */
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 20px; /* Safe zone for mobile edges */
+        }
+
+        /* THE BOX CONTAINING THE FORM */
+        #modal-content {
+            width: 100%;
+            max-width: 450px; /* Desktop cap */
+            background: #000;
+            border: 2px solid #00f2ff;
+            padding: 30px 20px;
+            text-align: center;
+            box-shadow: 0 0 20px rgba(0, 242, 255, 0.3);
+        }
+
+        /* RESPONSIVE HEADER: Shader Black scaling */
+        #result-text {
+            font-family: 'Shader Black', sans-serif; 
+            font-size: 8vw; /* Scales to screen width */
+            color: #fff;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+        }
+
+        @media (min-width: 600px) {
+            #result-text { font-size: 3rem; }
+        }
+
+        #sub-text {
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            letter-spacing: 1px;
+        }
+
+        /* FORM STYLING */
+        .name-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        input {
+            background: #000;
+            border: 1px solid #00f2ff;
+            color: #00f2ff;
+            padding: 12px;
+            font-family: inherit;
+            width: 100%;
+            outline: none;
+            font-size: 1rem;
+        }
+
+        input::placeholder {
+            color: rgba(0, 242, 255, 0.4);
+        }
+
+        #submitBtn {
+            width: 100%;
+            background: #00f2ff;
+            color: #000;
+            border: none;
+            padding: 15px;
+            font-family: 'Shader Black', sans-serif;
+            font-weight: bold;
+            font-size: 1.2rem;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .legal-notice {
+            font-size: 0.65rem;
+            color: rgba(0, 242, 255, 0.6);
+            margin-top: 20px;
+            line-height: 1.4;
+            text-align: justify;
+        }
+
+        #confirmation-msg {
+            display: none;
+            font-family: 'Shader Black', sans-serif;
+            font-size: 7vw;
+            color: #00f2ff;
+            text-shadow: 0 0 10px #00f2ff;
+            margin-top: 20px;
+        }
+    </style>
 </head>
 <body>
-    <div id="header">
-        <h1>PROXY MARKETING AI</h1>
-        <p>COMING SOON</p>
-    </div>
 
-    <canvas id="gridCanvas"></canvas>
-
-    <div id="instructions"></div>
-
-    <div id="controls">
-        <div style="grid-column: 2" class="btn" id="up"><div class="arrow up"></div></div>
-        <div style="grid-column: 1" class="btn" id="left"><div class="arrow left"></div></div>
-        <div style="grid-column: 3" class="btn" id="right"><div class="arrow right"></div></div>
-        <div style="grid-column: 2" class="btn" id="down"><div class="arrow down"></div></div>
-    </div>
+    <canvas id="gameCanvas"></canvas>
 
     <div id="modal">
-    <div id="modal-content">
-        <div id="result-text" class="glitch" data-text=""></div>
-        <p id="sub-text">IDENTIFICATION REQUIRED FOR GRID ACCESS.</p>
-        
-        <form id="emailForm" action="#" method="POST">
-            <div class="name-container">
-                <input type="text" name="firstName" id="firstName" placeholder="FIRST_NAME" required>
-                <input type="text" name="lastName" id="lastName" placeholder="LAST_NAME" required>
+        <div id="modal-content">
+            <div id="result-text">WINNER / LOSER</div>
+            <p id="sub-text">IDENTIFICATION REQUIRED FOR GRID ACCESS.</p>
+            
+            <form id="emailForm" action="#" method="POST">
+                <div class="name-container">
+                    <input type="text" id="firstName" placeholder="FIRST_NAME" required>
+                    <input type="text" id="lastName" placeholder="LAST_NAME" required>
+                </div>
+                <input type="email" id="emailInput" placeholder="USER@PROTOCOL.AI" required>
+                <button type="submit" id="submitBtn">INITIALIZE</button>
+            </form>
+            
+            <div class="legal-notice">
+                // PROTOCOL_NOTICE: BY INITIALIZING, YOU PERMIT PROXY MARKETING AI TO TRANSMIT ENCRYPTED COMMUNICATIONS REGARDING DIGITAL ARCHITECTURE.
             </div>
             
-            <input type="email" name="email" id="emailInput" placeholder="USER@PROTOCOL.AI" required>
-            <button type="submit" id="submitBtn">INITIALIZE</button>
-        </form>
-        
-        <div class="legal-notice">
-            // PROTOCOL_NOTICE: BY INITIALIZING, YOU PERMIT PROXY MARKETING AI TO TRANSMIT ENCRYPTED COMMUNICATIONS.
-        </div>
-        
-        <div id="confirmation-msg" style="display:none;">
-            PROXY INITIATED!
+            <div id="confirmation-msg">PROXY INITIATED!</div>
         </div>
     </div>
-</div>
-
-<style>
-    /* GLOBAL RESET FOR BOX MODEL */
-    * {
-        box-sizing: border-box;
-    }
-
-    #modal {
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.95);
-        display: none; /* Controlled by JS */
-        align-items: center;
-        justify-content: center;
-        z-index: 1000;
-        padding: 20px; /* Safe zone for the very edges of the screen */
-    }
-
-    #modal-content {
-        width: 100%;
-        max-width: 500px; /* Limit on desktop */
-        text-align: center;
-        background: #000;
-        border: 2px solid #00f2ff;
-        padding: 30px 20px; /* Internal padding */
-        box-shadow: 0 0 30px rgba(0, 242, 255, 0.2);
-    }
-
-    /* Responsive Font Scaling for the Header */
-    #result-text {
-        font-family: 'Shader Black', sans-serif;
-        font-size: 8vw; /* Scales with screen width */
-        margin-bottom: 10px;
-        color: #fff;
-        word-wrap: break-word; /* Prevents overflow */
-    }
-
-    @media (min-width: 600px) {
-        #result-text {
-            font-size: 3rem; /* Caps the size on larger screens */
-        }
-    }
-
-    .name-container {
-        display: flex;
-        gap: 10px;
-        margin-bottom: 10px;
-    }
-
-    #firstName, #lastName, #emailInput {
-        background: rgba(0, 0, 0, 1);
-        border: 1px solid #00f2ff;
-        color: #00f2ff;
-        padding: 12px;
-        font-family: 'Courier New', monospace;
-        text-transform: uppercase;
-        width: 100%; /* Important for responsiveness */
-        outline: none;
-    }
-
-    #submitBtn {
-        width: 100%;
-        margin-top: 15px;
-        background: #00f2ff;
-        color: #000;
-        border: none;
-        padding: 15px;
-        font-family: 'Shader Black', sans-serif;
-        font-weight: bold;
-        cursor: pointer;
-    }
-
-    .legal-notice {
-        font-size: 0.7rem;
-        color: rgba(0, 242, 255, 0.6);
-        margin-top: 20px;
-        line-height: 1.4;
-    }
-
-    #confirmation-msg {
-        font-family: 'Shader Black', sans-serif;
-        font-size: 6vw;
-        color: #00f2ff;
-        margin-top: 20px;
-        text-shadow: 0 0 10px #00f2ff;
-    }
-</style>
 
     <script src="game.bf12ad.js"></script>
 </body>
