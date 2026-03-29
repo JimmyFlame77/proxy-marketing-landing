@@ -15,6 +15,11 @@
 
     <canvas id="gridCanvas"></canvas>
 
+    <div id="instructions">
+        <span class="desktop-instr">USE ARROW KEYS TO NAVIGATE THE GRID</span>
+        <span class="mobile-instr">USE ON-SCREEN CONTROLS TO NAVIGATE</span>
+    </div>
+
     <div id="controls">
         <div style="grid-column: 2" class="btn" id="up">▲</div>
         <div style="grid-column: 1" class="btn" id="left">◀</div>
@@ -23,12 +28,17 @@
     </div>
 
     <div id="modal">
-        <div id="result-text"></div>
-        <p style="font-size: 0.9rem; margin-bottom: 20px;">The grid is evolving. Join the Proxy Protocol for early access.</p>
-        <form id="emailForm">
-            <input type="email" placeholder="ENTER EMAIL ADDRESS" required>
-            <button type="submit">INITIALIZE</button>
-        </form>
+        <div id="modal-content">
+            <div id="result-text"></div>
+            <p id="sub-text">The grid is evolving. Join the Proxy Protocol for early access.</p>
+            <form id="emailForm">
+                <input type="email" id="emailInput" placeholder="ENTER EMAIL ADDRESS" required>
+                <button type="submit" id="submitBtn">INITIALIZE</button>
+            </form>
+            <div id="confirmation-msg" style="display:none; font-size: 1.5rem; color: #00f2ff; margin-top: 20px;">
+                PROXY INITIATED!
+            </div>
+        </div>
     </div>
 
     <script src="game.js"></script>
