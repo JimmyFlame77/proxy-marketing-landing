@@ -6,7 +6,6 @@ body, html {
         linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
     overflow: hidden; 
-    /* Default to Shader Thin */
     font-family: "shader-thin", sans-serif; 
     font-weight: 300;
 }
@@ -34,7 +33,7 @@ p { color: #00c3ff; margin: 5px 0 0; font-size: 1rem; opacity: 0.8; font-family:
     font-family: "shader-thin", sans-serif;
 }
 
-/* Glitch Logic */
+/* Glitch Base Logic */
 .glitch { 
     position: relative; 
     animation: glitch-skew 1s infinite linear alternate-reverse; 
@@ -66,14 +65,19 @@ input::placeholder { color: rgba(0, 242, 255, 0.3); }
 
 button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; font-weight: 900; cursor: pointer; text-transform: uppercase; font-family: "shader-black", sans-serif; width: 100%; }
 
+/* Red Aggressive Glitch for Success Message */
 #confirmation-msg { 
     font-family: "shader-black", sans-serif; 
     font-weight: 900; 
-    font-size: 1.6rem; 
-    color: #00f2ff; 
+    font-size: 1.8rem; 
+    color: #ff003c; /* Aggressive Red */
     margin-top: 20px; 
-    text-shadow: 0 0 10px #00f2ff; 
+    text-shadow: 0 0 15px #ff003c; 
 }
+
+/* Override Glitch colors for Red State */
+#confirmation-msg.glitch::before { text-shadow: -2px 0 #fff; }
+#confirmation-msg.glitch::after { text-shadow: -2px 0 #ff003c; }
 
 /* Geometric Buttons */
 #controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; grid-template-columns: repeat(3, 65px); gap: 10px; z-index: 30; }
@@ -84,4 +88,4 @@ button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; fon
 .left { border-width: 10px 15px 10px 0; border-color: transparent #00f2ff transparent transparent; }
 .right { border-width: 10px 0 10px 15px; border-color: transparent transparent transparent #00f2ff; }
 
-@media (max-width: 768px) { #controls { display: grid; } #instructions { font-size: 0.9rem; bottom: 260px; top: auto; transform: translateX(-50%); } }
+@media (max-width: 768px) { #controls { display: grid; } #instructions { font-size: 0.9rem; bottom: 260px; top: auto; transform: translateX(-50%); } }}
