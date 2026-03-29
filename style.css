@@ -2,11 +2,10 @@ body, html {
     margin: 0; padding: 0; 
     background-color: #050505;
     background-image: 
-        linear-gradient(rgba(0, 255, 70, 0.05) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(0, 255, 70, 0.05) 1px, transparent 1px);
+        linear-gradient(rgba(0, 242, 255, 0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 242, 255, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
     overflow: hidden; 
-    /* Primary Font: Strelka */
     font-family: "strelka", sans-serif; 
 }
 
@@ -29,7 +28,6 @@ p { color: #00c3ff; margin: 5px 0 0; font-size: 1rem; opacity: 0.8; }
     font-family: "strelka", sans-serif;
 }
 
-/* Glitch Logic */
 .glitch { position: relative; animation: glitch-skew 1s infinite linear alternate-reverse; }
 .glitch::before, .glitch::after { content: attr(data-text); position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
 .glitch::before { left: 2px; text-shadow: -2px 0 #ff003c; clip: rect(44px, 450px, 56px, 0); animation: glitch-anim 5s infinite linear alternate-reverse; }
@@ -45,12 +43,15 @@ p { color: #00c3ff; margin: 5px 0 0; font-size: 1rem; opacity: 0.8; }
     backdrop-filter: blur(10px);
 }
 
-.legal-notice { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 15px; line-height: 1.4; }
+.name-fields { display: flex; gap: 10px; margin-bottom: 0; }
 
-input { padding: 12px; width: 100%; box-sizing: border-box; background: transparent; border: 1px solid #00f2ff; color: #00f2ff; margin-bottom: 15px; font-family: "strelka", sans-serif; }
-button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-family: "strelka", sans-serif; }
+.legal-notice { font-size: 0.65rem; color: rgba(0, 242, 255, 0.5); margin-top: 15px; line-height: 1.4; text-transform: uppercase; }
 
-/* Geometric Buttons */
+input { padding: 12px; width: 100%; box-sizing: border-box; background: transparent; border: 1px solid #00f2ff; color: #00f2ff; margin-bottom: 15px; font-family: "strelka", sans-serif; text-transform: uppercase; }
+input::placeholder { color: rgba(0, 242, 255, 0.3); }
+
+button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-family: "strelka", sans-serif; width: 100%; }
+
 #controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; grid-template-columns: repeat(3, 65px); gap: 10px; z-index: 30; }
 .btn { width: 65px; height: 65px; background: rgba(0, 242, 255, 0.05); border: 1px solid rgba(0, 242, 255, 0.4); border-radius: 4px; display: flex; align-items: center; justify-content: center; }
 .arrow { width: 0; height: 0; border-style: solid; }
