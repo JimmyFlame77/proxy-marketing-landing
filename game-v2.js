@@ -3,11 +3,12 @@ const ctx = canvas.getContext('2d');
 const modal = document.getElementById('modal');
 const resultText = document.getElementById('result-text');
 const instrOverlay = document.getElementById('instructions');
+const emailForm = document.getElementById('emailForm');
 
 const CONFIG = {
     cellSize: 10,
-    speed: 70, // FASTER: 70ms for high-intensity movement
-    colors: { bg: '#0a0a0a', p1: '#00f2ff', p2: '#ff003c' }
+    speed: 70,
+    colors: { bg: '#050505', p1: '#00f2ff', p2: '#ff003c' }
 };
 
 let lastTime = 0, walls = new Set(), gameActive = false, gameOver = false;
@@ -18,7 +19,6 @@ function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    // Grid-aligned starts
     p1.x = Math.floor(100 / CONFIG.cellSize) * CONFIG.cellSize;
     p1.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
     p1.dx = 1; p1.dy = 0;
@@ -31,13 +31,14 @@ function init() {
     gameOver = false;
     gameActive = false;
     modal.style.display = 'none';
-    instrOverlay.style.display = 'block'; 
-    draw();
+    instrOverlay.style.display = 'block';
+    instrOverlay.innerHTML = window.innerWidth > 768 ? "PRESS ANY ARROW KEY TO START GRID" : "TAP ANY DIRECTION TO START GRID";
+    
+    render();
 }
 
-function draw() {
-    ctx.fillStyle = CONFIG.colors.bg;
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); // Let CSS handle the charcoal/grid bg
 
     walls.forEach(wall => {
         const [x, y, color] = wall.split(',');
@@ -47,7 +48,7 @@ function draw() {
     });
 
     [p1, p2].forEach(p => {
-        ctx.shadowBlur = 20; ctx.shadowColor = p.color;
+        ctx.shadowBlur = 15; ctx.shadowColor = p.color;
         ctx.fillStyle = p.color;
         ctx.fillRect(p.x, p.y, CONFIG.cellSize - 1, CONFIG.cellSize - 1);
     });
@@ -69,9 +70,8 @@ function update(time) {
         else if (isHit(p2)) end("Proxy Established!", CONFIG.colors.p1);
         
         moveHunterAI();
-
         lastTime = time;
-        draw();
+        render();
     }
     requestAnimationFrame(update);
 }
@@ -82,46 +82,34 @@ function isHit(p) {
 }
 
 function moveHunterAI() {
-    // 30% chance to recalculate "Attack" path to Player
-    if (Math.random() < 0.3) {
+    if (Math.random() < 0.35) { // 35% chance to hunt player
         const diffX = p1.x - p2.x;
         const diffY = p1.y - p2.y;
-        let newDx = p2.dx, newDy = p2.dy;
+        let nDx = Math.abs(diffX) > Math.abs(diffY) ? (diffX > 0 ? 1 : -1) : 0;
+        let nDy = nDx === 0 ? (diffY > 0 ? 1 : -1) : 0;
 
-        // Try to move toward player on the larger axis
-        if (Math.abs(diffX) > Math.abs(diffY)) {
-            newDx = diffX > 0 ? 1 : -1; newDy = 0;
-        } else {
-            newDy = diffY > 0 ? 1 : -1; newDx = 0;
-        }
-
-        // Only turn if it's not a 180-degree suicide turn and path is clear
-        if ((newDx !== -p2.dx || newDy !== -p2.dy) && !isHit({x: p2.x + newDx*CONFIG.cellSize, y: p2.y + newDy*CONFIG.cellSize})) {
-            p2.dx = newDx; p2.dy = newDy;
+        if ((nDx !== -p2.dx || nDy !== -p2.dy) && !isHit({x: p2.x + nDx*CONFIG.cellSize, y: p2.y + nDy*CONFIG.cellSize})) {
+            p2.dx = nDx; p2.dy = nDy;
         }
     }
-
-    // Emergency Avoidance: If current path is a wall, turn anywhere safe
+    // Safety check
     if (isHit({x: p2.x + p2.dx*CONFIG.cellSize, y: p2.y + p2.dy*CONFIG.cellSize})) {
-        const options = [{x:0,y:1}, {x:0,y:-1}, {x:1,y:0}, {x:-1,y:0}].filter(d => !isHit({x: p2.x + d.x*CONFIG.cellSize, y: p2.y + d.y*CONFIG.cellSize}));
-        if (options.length > 0) {
-            const move = options[Math.floor(Math.random() * options.length)];
-            p2.dx = move.x; p2.dy = move.y;
-        }
+        const safe = [{x:0,y:1}, {x:0,y:-1}, {x:1,y:0}, {x:-1,y:0}].filter(d => !isHit({x: p2.x + d.x*CONFIG.cellSize, y: p2.y + d.y*CONFIG.cellSize}));
+        if (safe.length > 0) { const m = safe[Math.floor(Math.random() * safe.length)]; p2.dx = m.x; p2.dy = m.y; }
     }
 }
 
 function end(msg, color) {
     gameOver = true;
     resultText.innerText = msg;
+    resultText.setAttribute('data-text', msg);
     resultText.style.color = color;
     setTimeout(() => modal.style.display = 'block', 500);
 }
 
-// Global Controls
 window.addEventListener('keydown', e => {
     if (!gameActive && !gameOver && e.key.includes('Arrow')) { 
-        gameActive = true; instrOverlay.style.display = 'none'; update(); 
+        gameActive = true; instrOverlay.style.display = 'none'; update(0); 
     }
     if (e.key === 'ArrowUp' && p1.dy === 0) { p1.dx = 0; p1.dy = -1; }
     if (e.key === 'ArrowDown' && p1.dy === 0) { p1.dx = 0; p1.dy = 1; }
@@ -130,13 +118,22 @@ window.addEventListener('keydown', e => {
 });
 
 const ctrl = (x, y) => { 
-    if (!gameActive && !gameOver) { gameActive = true; instrOverlay.style.display = 'none'; update(); }
+    if (!gameActive && !gameOver) { gameActive = true; instrOverlay.style.display = 'none'; update(0); }
     if ((x !== 0 && p1.dx === 0) || (y !== 0 && p1.dy === 0)) { p1.dx = x; p1.dy = y; }
 };
 document.getElementById('up').onclick = () => ctrl(0, -1);
 document.getElementById('down').onclick = () => ctrl(0, 1);
 document.getElementById('left').onclick = () => ctrl(-1, 0);
 document.getElementById('right').onclick = () => ctrl(1, 0);
+
+emailForm.onsubmit = (e) => {
+    e.preventDefault();
+    document.getElementById('emailInput').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('sub-text').style.display = 'none';
+    document.querySelector('.legal-notice').style.display = 'none';
+    document.getElementById('confirmation-msg').style.display = 'block';
+};
 
 window.onresize = init;
 init();
