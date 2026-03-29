@@ -1,146 +1,152 @@
-/**
- * PROXY MARKETING AI // THE GRID ENGINE v1.5
- * Fully Unified: Game Loop + Lead Capture Form
- */
+const canvas = document.getElementById('gridCanvas');
+const ctx = canvas.getContext('2d');
+const modal = document.getElementById('modal');
+const resultText = document.getElementById('result-text');
+const instrOverlay = document.getElementById('instructions');
+const emailForm = document.getElementById('emailForm');
 
-document.addEventListener("DOMContentLoaded", () => {
-    // --- 1. SYSTEM CONFIGURATION ---
-    const canvas = document.getElementById('gameCanvas');
-    const ctx = canvas.getContext('2d');
-    const modal = document.getElementById('modal');
-    const emailForm = document.getElementById('emailForm');
-    const resultText = document.getElementById('result-text');
+const CONFIG = {
+    cellSize: 10,
+    speed: 70, 
+    colors: { bg: '#050505', p1: '#00f2ff', p2: '#ff003c' }
+};
 
-    // Hide the modal initially so the game can play
-    modal.style.display = 'none';
+let lastTime = 0, walls = new Set(), gameActive = false, gameOver = false;
+let p1 = { x: 0, y: 0, dx: 1, dy: 0, color: CONFIG.colors.p1 };
+let p2 = { x: 0, y: 0, dx: -1, dy: 0, color: CONFIG.colors.p2 };
 
-    let gameActive = true;
-
-    // Responsive Canvas
-    function resizeCanvas() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-    }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
-
-    // --- 2. GRID ENTITIES (The Game Objects) ---
-    const player = {
-        x: canvas.width / 2,
-        y: canvas.height - 100,
-        size: 30,
-        color: '#00f2ff' // P1 Cyan
-    };
-
-    const targetNode = {
-        x: canvas.width / 2,
-        y: 100,
-        size: 40,
-        color: '#ff003c' // Threat Red
-    };
-
-    // Input Tracking (Mouse & Touch)
-    let pointerX = player.x;
-    let pointerY = player.y;
-
-    canvas.addEventListener('mousemove', (e) => {
-        pointerX = e.clientX;
-        pointerY = e.clientY;
-    });
+function init() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     
-    canvas.addEventListener('touchmove', (e) => {
-        e.preventDefault(); // Stop screen scrolling while playing
-        pointerX = e.touches[0].clientX;
-        pointerY = e.touches[0].clientY;
-    }, { passive: false });
+    p1.x = Math.floor(100 / CONFIG.cellSize) * CONFIG.cellSize;
+    p1.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
+    p1.dx = 1; p1.dy = 0;
 
-    // --- 3. THE PROTOCOL TRIGGER (Win State) ---
-    function triggerProxyProtocol(status) {
-        if (!gameActive) return; // Prevent multiple triggers
-        gameActive = false; 
+    p2.x = Math.floor((canvas.width - 100) / CONFIG.cellSize) * CONFIG.cellSize;
+    p2.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
+    p2.dx = -1; p2.dy = 0;
+
+    walls.clear();
+    gameOver = false;
+    gameActive = false;
+    modal.style.display = 'none';
+    
+    instrOverlay.style.display = 'block';
+    instrOverlay.innerHTML = window.innerWidth > 768 ? "PRESS ANY ARROW KEY TO START GRID" : "TAP ANY DIRECTION TO START GRID";
+    
+    render();
+}
+
+function render() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
+
+    walls.forEach(wall => {
+        const [x, y, color] = wall.split(',');
+        ctx.shadowBlur = 5; ctx.shadowColor = color;
+        ctx.fillStyle = color;
+        ctx.fillRect(parseInt(x), parseInt(y), CONFIG.cellSize - 1, CONFIG.cellSize - 1);
+    });
+
+    [p1, p2].forEach(p => {
+        ctx.shadowBlur = 15; ctx.shadowColor = p.color;
+        ctx.fillStyle = p.color;
+        ctx.fillRect(p.x, p.y, CONFIG.cellSize - 1, CONFIG.cellSize - 1);
+    });
+}
+
+function update(time) {
+    if (gameOver || !gameActive) return;
+
+    if (time - lastTime > CONFIG.speed) {
+        walls.add(`${p1.x},${p1.y},${p1.color}`);
+        walls.add(`${p2.x},${p2.y},${p2.color}`);
+
+        p1.x += p1.dx * CONFIG.cellSize;
+        p1.y += p1.dy * CONFIG.cellSize;
+        p2.x += p2.dx * CONFIG.cellSize;
+        p2.y += p2.dy * CONFIG.cellSize;
+
+        if (isHit(p1)) end("You've Been Proxied!", CONFIG.colors.p2);
+        else if (isHit(p2)) end("Proxy Established!", CONFIG.colors.p1);
         
-        // Update the header text and show the UI
-        resultText.innerText = status;
-        modal.style.display = 'flex';
+        moveHunterAI();
+        lastTime = time;
+        render();
     }
+    requestAnimationFrame(update);
+}
 
-    // --- 4. DATA CAPTURE (The Form Submission) ---
-    if (emailForm) {
-        emailForm.onsubmit = async (e) => {
-            e.preventDefault(); 
-            
-            const submitBtn = document.getElementById('submitBtn');
-            const firstName = document.getElementById('firstName');
-            const lastName = document.getElementById('lastName');
-            const emailInput = document.getElementById('emailInput');
-            const confirmationMsg = document.getElementById('confirmation-msg');
-            const nameContainer = document.querySelector('.name-container');
-            const subText = document.getElementById('sub-text');
-            const legalNotice = document.querySelector('.legal-notice');
+function isHit(p) {
+    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) return true;
+    return Array.from(walls).some(w => w.startsWith(`${p.x},${p.y}`));
+}
 
-            submitBtn.innerText = "AUTHENTICATING...";
-            submitBtn.style.background = "#fff";
-            submitBtn.disabled = true;
+function moveHunterAI() {
+    // APEX HUNTER: 40% chance to close gap
+    if (Math.random() < 0.4) {
+        const diffX = p1.x - p2.x;
+        const diffY = p1.y - p2.y;
+        let nDx = p2.dx, nDy = p2.dy;
 
-            setTimeout(() => {
-                // Wipe the form UI
-                firstName.style.display = 'none';
-                lastName.style.display = 'none';
-                if(nameContainer) nameContainer.style.display = 'none';
-                emailInput.style.display = 'none';
-                submitBtn.style.display = 'none';
-                subText.style.display = 'none';
-                legalNotice.style.display = 'none';
-
-                // Show Success
-                confirmationMsg.style.display = 'block';
-                
-                console.log("LEAD SECURED:", emailInput.value);
-            }, 1500);
-        };
-    }
-
-    // --- 5. THE GAME ENGINE (Render Loop) ---
-    function update() {
-        if (!gameActive) return;
-
-        // Player smoothly follows pointer
-        player.x += (pointerX - player.x) * 0.1;
-        player.y += (pointerY - player.y) * 0.1;
-
-        // Collision Detection (Did P1 hit the Target?)
-        let dx = player.x - targetNode.x;
-        let dy = player.y - targetNode.y;
-        let distance = Math.sqrt(dx * dx + dy * dy);
-
-        if (distance < (player.size/2 + targetNode.size/2)) {
-            triggerProxyProtocol("ACCESS GRANTED");
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            nDx = diffX > 0 ? 1 : -1; nDy = 0;
+        } else {
+            nDy = diffY > 0 ? 1 : -1; nDx = 0;
         }
 
-        draw();
-        requestAnimationFrame(update);
+        if ((nDx !== -p2.dx || nDy !== -p2.dy) && !isHit({x: p2.x + nDx*CONFIG.cellSize, y: p2.y + nDy*CONFIG.cellSize})) {
+            p2.dx = nDx; p2.dy = nDy;
+        }
     }
-
-    function draw() {
-        // Clear the screen with deep matte carbon
-        ctx.fillStyle = '#050505';
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-        // Render Target Node
-        ctx.fillStyle = targetNode.color;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = targetNode.color;
-        ctx.fillRect(targetNode.x - targetNode.size/2, targetNode.y - targetNode.size/2, targetNode.size, targetNode.size);
-
-        // Render Player
-        ctx.fillStyle = player.color;
-        ctx.shadowBlur = 20;
-        ctx.shadowColor = player.color;
-        ctx.fillRect(player.x - player.size/2, player.y - player.size/2, player.size, player.size);
+    // Emergency Wall Avoidance
+    if (isHit({x: p2.x + p2.dx * CONFIG.cellSize, y: p2.y + p2.dy * CONFIG.cellSize})) {
+        const safe = [{dx:0,dy:1}, {dx:0,dy:-1}, {dx:1,dy:0}, {dx:-1,dy:0}]
+            .filter(d => (d.dx !== -p2.dx || d.dy !== -p2.dy))
+            .filter(d => !isHit({x: p2.x + d.dx * CONFIG.cellSize, y: p2.y + d.dy * CONFIG.cellSize}));
         
-        ctx.shadowBlur = 0; // Prevent glowing everything
+        if (safe.length > 0) {
+            const m = safe[Math.floor(Math.random() * safe.length)];
+            p2.dx = m.dx; p2.dy = m.dy;
+        }
     }
+}
 
-    // Boot the System
-    update();
+function end(msg, color) {
+    gameOver = true;
+    resultText.innerText = msg;
+    resultText.setAttribute('data-text', msg);
+    resultText.style.color = color;
+    setTimeout(() => modal.style.display = 'block', 500);
+}
+
+window.addEventListener('keydown', e => {
+    if (!gameActive && !gameOver && e.key.includes('Arrow')) { 
+        gameActive = true; instrOverlay.style.display = 'none'; update(0); 
+    }
+    if (e.key === 'ArrowUp' && p1.dy === 0) { p1.dx = 0; p1.dy = -1; }
+    if (e.key === 'ArrowDown' && p1.dy === 0) { p1.dx = 0; p1.dy = 1; }
+    if (e.key === 'ArrowLeft' && p1.dx === 0) { p1.dx = -1; p1.dy = 0; }
+    if (e.key === 'ArrowRight' && p1.dx === 0) { p1.dx = 1; p1.dy = 0; }
 });
+
+const ctrl = (x, y) => { 
+    if (!gameActive && !gameOver) { gameActive = true; instrOverlay.style.display = 'none'; update(0); }
+    if ((x !== 0 && p1.dx === 0) || (y !== 0 && p1.dy === 0)) { p1.dx = x; p1.dy = y; }
+};
+document.getElementById('up').onclick = () => ctrl(0, -1);
+document.getElementById('down').onclick = () => ctrl(0, 1);
+document.getElementById('left').onclick = () => ctrl(-1, 0);
+document.getElementById('right').onclick = () => ctrl(1, 0);
+
+emailForm.onsubmit = (e) => {
+    e.preventDefault();
+    document.getElementById('emailInput').style.display = 'none';
+    document.getElementById('submitBtn').style.display = 'none';
+    document.getElementById('sub-text').style.display = 'none';
+    document.querySelector('.legal-notice').style.display = 'none';
+    document.getElementById('confirmation-msg').style.display = 'block';
+};
+
+window.onresize = init;
+init();
