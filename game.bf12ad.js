@@ -18,19 +18,16 @@ let p2 = { x: 0, y: 0, dx: -1, dy: 0, color: CONFIG.colors.p2 };
 function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
-    
     p1.x = Math.floor(100 / CONFIG.cellSize) * CONFIG.cellSize;
     p1.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
     p1.dx = 1; p1.dy = 0;
     p2.x = Math.floor((canvas.width - 100) / CONFIG.cellSize) * CONFIG.cellSize;
     p2.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
     p2.dx = -1; p2.dy = 0;
-
     walls.clear();
     gameOver = false;
     gameActive = false;
     modal.style.display = 'none';
-    
     instrOverlay.style.display = 'block';
     instrOverlay.innerHTML = window.innerWidth > 768 ? "PRESS ANY ARROW KEY TO START GRID" : "TAP ANY DIRECTION TO START GRID";
     render();
@@ -60,10 +57,8 @@ function update(time) {
         p1.y += p1.dy * CONFIG.cellSize;
         p2.x += p2.dx * CONFIG.cellSize;
         p2.y += p2.dy * CONFIG.cellSize;
-        
         if (isHit(p1)) end("You've Been Proxied!", CONFIG.colors.p2);
         else if (isHit(p2)) end("Proxy Established!", CONFIG.colors.p1);
-        
         moveHunterAI();
         lastTime = time;
         render();
@@ -86,7 +81,6 @@ function moveHunterAI() {
         } else {
             nDy = diffY > 0 ? 1 : -1; nDx = 0;
         }
-
         if ((nDx !== -p2.dx || nDy !== -p2.dy) && !isHit({x: p2.x + nDx*CONFIG.cellSize, y: p2.y + nDy*CONFIG.cellSize})) {
             p2.dx = nDx; p2.dy = nDy;
         }
@@ -132,17 +126,21 @@ document.getElementById('right').onclick = () => ctrl(1, 0);
 
 emailForm.onsubmit = (e) => {
     e.preventDefault();
-    // Wipe result text (Proxy Established)
+    // 1. Wipe result text entirely 
     resultText.innerText = "";
     resultText.setAttribute('data-text', "");
-    // Hide all input elements
-    document.getElementById('firstName').style.display = 'none';
-    document.getElementById('lastName').style.display = 'none';
+    
+    // 2. Destroy the container innerHTML to prevent ghost inputs 
+    const nameContainer = document.getElementById('nameFieldsContainer');
+    if(nameContainer) nameContainer.innerHTML = "";
+    
+    // 3. Hide all remaining elements 
     document.getElementById('emailInput').style.display = 'none';
     document.getElementById('submitBtn').style.display = 'none';
     document.getElementById('sub-text').style.display = 'none';
     document.getElementById('legalNotice').style.display = 'none';
-    // Show aggressive red glitch confirmation
+    
+    // 4. Show final aggressive glitch message [cite: 2, 3]
     document.getElementById('confirmation-msg').style.display = 'block';
 };
 
