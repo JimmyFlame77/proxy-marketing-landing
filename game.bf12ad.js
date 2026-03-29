@@ -7,7 +7,7 @@ const emailForm = document.getElementById('emailForm');
 
 const CONFIG = {
     cellSize: 10,
-    speed: 70,
+    speed: 70, // High-intensity speed
     colors: { bg: '#050505', p1: '#00f2ff', p2: '#ff003c' }
 };
 
@@ -19,6 +19,7 @@ function init() {
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
+    // Grid-aligned starts (100px from edges)
     p1.x = Math.floor(100 / CONFIG.cellSize) * CONFIG.cellSize;
     p1.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
     p1.dx = 1; p1.dy = 0;
@@ -31,6 +32,8 @@ function init() {
     gameOver = false;
     gameActive = false;
     modal.style.display = 'none';
+    
+    // Set instruction text based on device
     instrOverlay.style.display = 'block';
     instrOverlay.innerHTML = window.innerWidth > 768 ? "PRESS ANY ARROW KEY TO START GRID" : "TAP ANY DIRECTION TO START GRID";
     
@@ -38,8 +41,10 @@ function init() {
 }
 
 function render() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height); // Let CSS handle the charcoal/grid bg
+    // Clear canvas - CSS handles the green grid background
+    ctx.clearRect(0, 0, canvas.width, canvas.height); 
 
+    // Draw all accumulated trail segments
     walls.forEach(wall => {
         const [x, y, color] = wall.split(',');
         ctx.shadowBlur = 5; ctx.shadowColor = color;
@@ -47,6 +52,7 @@ function render() {
         ctx.fillRect(parseInt(x), parseInt(y), CONFIG.cellSize - 1, CONFIG.cellSize - 1);
     });
 
+    // Draw current "Heads"
     [p1, p2].forEach(p => {
         ctx.shadowBlur = 15; ctx.shadowColor = p.color;
         ctx.fillStyle = p.color;
@@ -58,18 +64,22 @@ function update(time) {
     if (gameOver || !gameActive) return;
 
     if (time - lastTime > CONFIG.speed) {
+        // Record trails
         walls.add(`${p1.x},${p1.y},${p1.color}`);
         walls.add(`${p2.x},${p2.y},${p2.color}`);
 
+        // Move positions
         p1.x += p1.dx * CONFIG.cellSize;
         p1.y += p1.dy * CONFIG.cellSize;
         p2.x += p2.dx * CONFIG.cellSize;
         p2.y += p2.dy * CONFIG.cellSize;
 
+        // Collision Logic
         if (isHit(p1)) end("You've Been Proxied!", CONFIG.colors.p2);
         else if (isHit(p2)) end("Proxy Established!", CONFIG.colors.p1);
         
         moveHunterAI();
+
         lastTime = time;
         render();
     }
@@ -82,34 +92,52 @@ function isHit(p) {
 }
 
 function moveHunterAI() {
-    if (Math.random() < 0.35) { // 35% chance to hunt player
+    // APEX HUNTER: 40% chance to track player every move
+    if (Math.random() < 0.4) {
         const diffX = p1.x - p2.x;
         const diffY = p1.y - p2.y;
-        let nDx = Math.abs(diffX) > Math.abs(diffY) ? (diffX > 0 ? 1 : -1) : 0;
-        let nDy = nDx === 0 ? (diffY > 0 ? 1 : -1) : 0;
+        let nDx = p2.dx, nDy = p2.dy;
 
+        // Pick axis with largest distance to close gap
+        if (Math.abs(diffX) > Math.abs(diffY)) {
+            nDx = diffX > 0 ? 1 : -1; nDy = 0;
+        } else {
+            nDy = diffY > 0 ? 1 : -1; nDx = 0;
+        }
+
+        // Only turn if it's not a suicide 180 and path is clear
         if ((nDx !== -p2.dx || nDy !== -p2.dy) && !isHit({x: p2.x + nDx*CONFIG.cellSize, y: p2.y + nDy*CONFIG.cellSize})) {
             p2.dx = nDx; p2.dy = nDy;
         }
     }
-    // Safety check
-    if (isHit({x: p2.x + p2.dx*CONFIG.cellSize, y: p2.y + p2.dy*CONFIG.cellSize})) {
-        const safe = [{x:0,y:1}, {x:0,y:-1}, {x:1,y:0}, {x:-1,y:0}].filter(d => !isHit({x: p2.x + d.x*CONFIG.cellSize, y: p2.y + d.y*CONFIG.cellSize}));
-        if (safe.length > 0) { const m = safe[Math.floor(Math.random() * safe.length)]; p2.dx = m.x; p2.dy = m.y; }
+
+    // EMERGENCY AVOIDANCE: If about to hit a wall, find any safe path
+    if (isHit({x: p2.x + p2.dx * CONFIG.cellSize, y: p2.y + p2.dy * CONFIG.cellSize})) {
+        const escapeDirs = [{dx:0,dy:1}, {dx:0,dy:-1}, {dx:1,dy:0}, {dx:-1,dy:0}]
+            .filter(d => (d.dx !== -p2.dx || d.dy !== -p2.dy))
+            .filter(d => !isHit({x: p2.x + d.dx * CONFIG.cellSize, y: p2.y + d.dy * CONFIG.cellSize}));
+        
+        if (escapeDirs.length > 0) {
+            const escape = escapeDirs[Math.floor(Math.random() * escapeDirs.length)];
+            p2.dx = escape.dx; p2.dy = escape.dy;
+        }
     }
 }
 
 function end(msg, color) {
     gameOver = true;
     resultText.innerText = msg;
-    resultText.setAttribute('data-text', msg);
+    resultText.setAttribute('data-text', msg); // Triggers CSS Glitch
     resultText.style.color = color;
     setTimeout(() => modal.style.display = 'block', 500);
 }
 
+// User Controls
 window.addEventListener('keydown', e => {
     if (!gameActive && !gameOver && e.key.includes('Arrow')) { 
-        gameActive = true; instrOverlay.style.display = 'none'; update(0); 
+        gameActive = true; 
+        instrOverlay.style.display = 'none'; 
+        update(0); 
     }
     if (e.key === 'ArrowUp' && p1.dy === 0) { p1.dx = 0; p1.dy = -1; }
     if (e.key === 'ArrowDown' && p1.dy === 0) { p1.dx = 0; p1.dy = 1; }
