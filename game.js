@@ -2,142 +2,146 @@ const canvas = document.getElementById('gridCanvas');
 const ctx = canvas.getContext('2d');
 const modal = document.getElementById('modal');
 const resultText = document.getElementById('result-text');
-const emailForm = document.getElementById('emailForm');
-const confirmationMsg = document.getElementById('confirmation-msg');
 const instrOverlay = document.getElementById('instructions');
 
-let width, height, cellSize = 10;
-let player, enemy, walls = new Set();
-let gameOver = false;
-let gameStarted = false;
+const CONFIG = {
+    cellSize: 10,
+    speed: 100, // Movement every 100ms
+    colors: {
+        bg: '#0a0a0a',
+        player: '#00f2ff',
+        enemy: '#ff003c'
+    }
+};
 
-// CONTROL SETTINGS
-const GAME_SPEED = 120; // Higher = Slower. 120ms is a comfortable "Strategy" pace.
+let lastTime = 0;
+let walls = new Set();
+let gameActive = false;
+let gameOver = false;
+
+let p1 = { x: 0, y: 0, dx: 1, dy: 0, color: CONFIG.colors.player };
+let p2 = { x: 0, y: 0, dx: -1, dy: 0, color: CONFIG.colors.enemy };
 
 function init() {
-    width = canvas.width = window.innerWidth;
-    height = canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
     
-    // Reset State
-    gameOver = false;
-    gameStarted = false;
-    walls.clear();
-    modal.style.display = 'none';
-    instrOverlay.style.display = 'block';
-    instrOverlay.innerHTML = '<span class="desktop-instr">PRESS ANY KEY OR TAP CONTROLS TO START</span>';
+    // Grid-aligned start positions
+    p1.x = Math.floor(50 / CONFIG.cellSize) * CONFIG.cellSize;
+    p1.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
+    p1.dx = 1; p1.dy = 0;
 
-    // Start positions: Player on left, Enemy on right
-    player = { 
-        x: Math.floor(50 / cellSize) * cellSize, 
-        y: Math.floor((height / 2) / cellSize) * cellSize, 
-        dx: 1, dy: 0, color: '#00f2ff' 
-    };
-    enemy = { 
-        x: Math.floor((width - 50) / cellSize) * cellSize, 
-        y: Math.floor((height / 2) / cellSize) * cellSize, 
-        dx: -1, dy: 0, color: '#ff003c' 
-    };
+    p2.x = Math.floor((canvas.width - 50) / CONFIG.cellSize) * CONFIG.cellSize;
+    p2.y = Math.floor((canvas.height / 2) / CONFIG.cellSize) * CONFIG.cellSize;
+    p2.dx = -1; p2.dy = 0;
+
+    walls.clear();
+    gameOver = false;
+    gameActive = false;
+    modal.style.display = 'none';
     
-    // Draw initial frame
-    render();
+    instrOverlay.style.display = 'block';
+    instrOverlay.innerHTML = '<span class="desktop-instr">PRESS ANY KEY TO START GRID</span>';
+    
+    draw();
 }
 
-function render() {
-    // 1. CLEAR SCREEN - This fixes the "Red Screen" bleed
-    ctx.fillStyle = '#0a0a0a'; 
-    ctx.fillRect(0, 0, width, height);
+function draw() {
+    // TOTAL CLEAR - Stops the red bleed
+    ctx.fillStyle = CONFIG.bg;
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // 2. DRAW WALLS
+    // Draw Static Walls
     walls.forEach(wall => {
-        const [wx, wy, color] = wall.split(',');
+        const [x, y, color] = wall.split(',');
         ctx.fillStyle = color;
-        ctx.shadowBlur = 5;
+        ctx.shadowBlur = 4;
         ctx.shadowColor = color;
-        ctx.fillRect(parseInt(wx), parseInt(wy), cellSize - 1, cellSize - 1);
+        ctx.fillRect(parseInt(x), parseInt(y), CONFIG.cellSize - 1, CONFIG.cellSize - 1);
     });
 
-    // 3. DRAW CURRENT HEADS
-    [player, enemy].forEach(p => {
+    // Draw Heads
+    [p1, p2].forEach(p => {
         ctx.fillStyle = p.color;
         ctx.shadowBlur = 15;
         ctx.shadowColor = p.color;
-        ctx.fillRect(p.x, p.y, cellSize - 1, cellSize - 1);
+        ctx.fillRect(p.x, p.y, CONFIG.cellSize - 1, CONFIG.cellSize - 1);
     });
 }
 
-function update() {
-    if (gameOver || !gameStarted) return;
+function update(time) {
+    if (gameOver || !gameActive) return;
 
-    // Save current positions to walls BEFORE moving
-    walls.add(`${player.x},${player.y},${player.color}`);
-    walls.add(`${enemy.x},${enemy.y},${enemy.color}`);
+    if (time - lastTime > CONFIG.speed) {
+        // Record current positions as walls
+        walls.add(`${p1.x},${p1.y},${p1.color}`);
+        walls.add(`${p2.x},${p2.y},${p2.color}`);
 
-    // Move
-    player.x += player.dx * cellSize;
-    player.y += player.dy * cellSize;
-    enemy.x += enemy.dx * cellSize;
-    enemy.y += enemy.dy * cellSize;
+        // Advance
+        p1.x += p1.dx * CONFIG.cellSize;
+        p1.y += p1.dy * CONFIG.cellSize;
+        p2.x += p2.dx * CONFIG.cellSize;
+        p2.y += p2.dy * CONFIG.cellSize;
 
-    // Check Collisions
-    if (hitWall(player.x, player.y) || outOfBounds(player)) {
-        endGame("You've Been Proxied!", "#ff003c");
-    } else if (hitWall(enemy.x, enemy.y) || outOfBounds(enemy)) {
-        endGame("Proxy Established!", "#00f2ff");
+        // Collision Logic
+        if (isHit(p1)) end("You've Been Proxied!", CONFIG.colors.enemy);
+        else if (isHit(p2)) end("Proxy Established!", CONFIG.colors.player);
+        
+        // Simple AI: Don't hit walls
+        moveAI();
+
+        lastTime = time;
+        draw();
     }
+    requestAnimationFrame(update);
+}
 
-    // AI Logic: Simple obstacle avoidance
-    if (Math.random() < 0.2) {
-        const directions = [{x:0, y:1}, {x:0, y:-1}, {x:1, y:0}, {x:-1, y:0}];
-        const safe = directions.filter(d => !hitWall(enemy.x + d.x*cellSize, enemy.y + d.y*cellSize));
+function isHit(p) {
+    if (p.x < 0 || p.x >= canvas.width || p.y < 0 || p.y >= canvas.height) return true;
+    return Array.from(walls).some(w => w.startsWith(`${p.x},${p.y}`));
+}
+
+function moveAI() {
+    if (Math.random() < 0.1) {
+        const dirs = [{x:0, y:1}, {x:0, y:-1}, {x:1, y:0}, {x:-1, y:0}];
+        const safe = dirs.filter(d => {
+            const nx = p2.x + d.x * CONFIG.cellSize;
+            const ny = p2.y + d.y * CONFIG.cellSize;
+            return nx >= 0 && nx < canvas.width && ny >= 0 && ny < canvas.height && !Array.from(walls).some(w => w.startsWith(`${nx},${ny}`));
+        });
         if (safe.length > 0) {
             const move = safe[Math.floor(Math.random() * safe.length)];
-            enemy.dx = move.x; enemy.dy = move.y;
+            p2.dx = move.x; p2.dy = move.y;
         }
     }
-
-    render();
-    setTimeout(update, GAME_SPEED);
 }
 
-function hitWall(x, y) {
-    // Check if x,y exists in our wall set (ignoring color)
-    return Array.from(walls).some(w => w.startsWith(`${x},${y}`));
-}
-
-function outOfBounds(p) {
-    return p.x < 0 || p.x >= width || p.y < 0 || p.y >= height;
-}
-
-function endGame(msg, color) {
+function end(msg, color) {
     gameOver = true;
     resultText.innerText = msg;
     resultText.style.color = color;
-    setTimeout(() => { modal.style.display = 'block'; }, 500);
+    setTimeout(() => modal.style.display = 'block', 500);
 }
 
-// INPUT HANDLING
+// Global Controls
 window.addEventListener('keydown', e => {
-    if (!gameStarted) { gameStarted = true; update(); return; }
-    if (e.key === 'ArrowUp' && player.dy === 0) { player.dx = 0; player.dy = -1; }
-    if (e.key === 'ArrowDown' && player.dy === 0) { player.dx = 0; player.dy = 1; }
-    if (e.key === 'ArrowLeft' && player.dx === 0) { player.dx = -1; player.dy = 0; }
-    if (e.key === 'ArrowRight' && player.dx === 0) { player.dx = 1; player.dy = 0; }
+    if (!gameActive && !gameOver) { gameActive = true; instrOverlay.style.display = 'none'; update(); }
+    
+    if (e.key === 'ArrowUp' && p1.dy === 0) { p1.dx = 0; p1.dy = -1; }
+    if (e.key === 'ArrowDown' && p1.dy === 0) { p1.dx = 0; p1.dy = 1; }
+    if (e.key === 'ArrowLeft' && p1.dx === 0) { p1.dx = -1; p1.dy = 0; }
+    if (e.key === 'ArrowRight' && p1.dx === 0) { p1.dx = 1; p1.dy = 0; }
 });
 
-// Start via mobile buttons
-const mobileStart = () => { if(!gameStarted) { gameStarted = true; update(); } };
-document.getElementById('up').onclick = () => { mobileStart(); if(player.dy===0){player.dx=0; player.dy=-1;} };
-document.getElementById('down').onclick = () => { mobileStart(); if(player.dy===0){player.dx=0; player.dy=1;} };
-document.getElementById('left').onclick = () => { mobileStart(); if(player.dx===0){player.dx=-1; player.dy=0;} };
-document.getElementById('right').onclick = () => { mobileStart(); if(player.dx===0){player.dx=1; player.dy=0;} };
-
-emailForm.onsubmit = (e) => {
-    e.preventDefault();
-    document.getElementById('emailInput').style.display = 'none';
-    document.getElementById('submitBtn').style.display = 'none';
-    document.getElementById('sub-text').style.display = 'none';
-    confirmationMsg.style.display = 'block';
+// Mobile Controls
+const ctrl = (x, y) => { 
+    if (!gameActive && !gameOver) { gameActive = true; instrOverlay.style.display = 'none'; update(); }
+    if ((x !== 0 && p1.dx === 0) || (y !== 0 && p1.dy === 0)) { p1.dx = x; p1.dy = y; }
 };
+document.getElementById('up').onclick = () => ctrl(0, -1);
+document.getElementById('down').onclick = () => ctrl(0, 1);
+document.getElementById('left').onclick = () => ctrl(-1, 0);
+document.getElementById('right').onclick = () => ctrl(1, 0);
 
 window.onresize = init;
 init();
