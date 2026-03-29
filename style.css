@@ -6,9 +6,8 @@ body, html {
         linear-gradient(90deg, rgba(0, 255, 70, 0.05) 1px, transparent 1px);
     background-size: 40px 40px;
     overflow: hidden; 
-    /* Default to Shader Thin */
-    font-family: "shader", sans-serif;
-    font-weight: 200; 
+    /* Primary Font: Strelka */
+    font-family: "strelka", sans-serif; 
 }
 
 canvas { position: absolute; top: 0; left: 0; z-index: 1; }
@@ -16,31 +15,18 @@ canvas { position: absolute; top: 0; left: 0; z-index: 1; }
 #header { position: fixed; top: 20px; width: 100%; text-align: center; z-index: 10; pointer-events: none; }
 
 h1 { 
-    color: #00f2ff; 
-    margin: 0; 
-    text-shadow: 0 0 15px #00f2ff; 
-    font-size: 2.5rem; 
-    letter-spacing: 2px;
-    /* Shader Black */
-    font-family: "shader", sans-serif;
-    font-weight: 900; 
-    text-transform: uppercase;
+    color: #00f2ff; font-weight: 900; margin: 0; 
+    text-shadow: 0 0 15px #00f2ff; font-size: 2.2rem; 
+    letter-spacing: 5px; font-family: "strelka", sans-serif; 
 }
 
-#result-text {
-    /* The Win/Loss message also gets the heavy Shader Black treatment */
-    font-family: "shader", sans-serif;
-    font-weight: 900;
-}
-
-p { color: #00c3ff; margin: 5px 0 0; font-size: 1rem; opacity: 0.8; font-weight: 200; }
+p { color: #00c3ff; margin: 5px 0 0; font-size: 1rem; opacity: 0.8; }
 
 #instructions {
     position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 100%; text-align: center; color: #00f2ff; font-size: 1rem;
+    width: 100%; text-align: center; color: #00f2ff; font-size: 1.2rem;
     z-index: 50; pointer-events: none; text-shadow: 0 0 10px #00f2ff;
-    font-family: "shader", sans-serif;
-    font-weight: 200;
+    font-family: "strelka", sans-serif;
 }
 
 /* Glitch Logic */
@@ -59,10 +45,10 @@ p { color: #00c3ff; margin: 5px 0 0; font-size: 1rem; opacity: 0.8; font-weight:
     backdrop-filter: blur(10px);
 }
 
-.legal-notice { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 15px; line-height: 1.4; font-weight: 200; }
+.legal-notice { font-size: 0.65rem; color: rgba(255,255,255,0.5); margin-top: 15px; line-height: 1.4; }
 
-input { padding: 12px; width: 100%; box-sizing: border-box; background: transparent; border: 1px solid #00f2ff; color: #00f2ff; margin-bottom: 15px; font-family: "shader", sans-serif; font-weight: 200; }
-button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; font-weight: 900; cursor: pointer; text-transform: uppercase; font-family: "shader", sans-serif; }
+input { padding: 12px; width: 100%; box-sizing: border-box; background: transparent; border: 1px solid #00f2ff; color: #00f2ff; margin-bottom: 15px; font-family: "strelka", sans-serif; }
+button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; font-weight: bold; cursor: pointer; text-transform: uppercase; font-family: "strelka", sans-serif; }
 
 /* Geometric Buttons */
 #controls { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: none; grid-template-columns: repeat(3, 65px); gap: 10px; z-index: 30; }
@@ -73,4 +59,4 @@ button { background: #00f2ff; border: none; padding: 12px 25px; color: #000; fon
 .left { border-width: 10px 15px 10px 0; border-color: transparent #00f2ff transparent transparent; }
 .right { border-width: 10px 0 10px 15px; border-color: transparent transparent transparent #00f2ff; }
 
-@media (max-width: 768px) { #controls { display: grid; } #instructions { font-size: 0.8rem; bottom: 260px; top: auto; transform: translateX(-50%); } }
+@media (max-width: 768px) { #controls { display: grid; } #instructions { font-size: 0.9rem; bottom: 260px; top: auto; transform: translateX(-50%); } }
