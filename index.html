@@ -30,13 +30,16 @@
         <div id="modal-content">
             <div id="result-text" class="glitch" data-text=""></div>
             <p id="sub-text">Join the Proxy Protocol for early access.</p>
-            <form id="emailForm">
-                <input type="email" id="emailInput" placeholder="USER@PROTOCOL.AI" required>
+            
+            <form id="emailForm" action="https://your-worker-url.workers.dev" method="POST">
+                <input type="email" name="email" id="emailInput" placeholder="USER@PROTOCOL.AI" required>
                 <button type="submit" id="submitBtn">INITIALIZE</button>
             </form>
+            
             <div class="legal-notice">
                 By initializing, you permit Proxy Marketing AI to transmit communications regarding digital marketing protocols and services.
             </div>
+            
             <div id="confirmation-msg" style="display:none; font-size: 1.4rem; color: #00f2ff; margin-top: 20px; text-shadow: 0 0 10px #00f2ff;">
                 PROXY INITIATED!
             </div>
