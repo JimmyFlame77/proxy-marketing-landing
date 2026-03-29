@@ -1,0 +1,109 @@
+body, html { 
+    margin: 0; 
+    padding: 0; 
+    background: #000; 
+    overflow: hidden; 
+    font-family: 'Orbitron', sans-serif; 
+}
+
+#header { 
+    position: fixed; 
+    top: 20px; 
+    width: 100%; 
+    text-align: center; 
+    pointer-events: none; 
+    z-index: 10; 
+}
+
+h1 { 
+    color: #00f2ff; 
+    font-weight: 900; 
+    margin: 0; 
+    text-shadow: 0 0 20px #00f2ff; 
+    font-size: 2.5rem; 
+    letter-spacing: 4px; 
+}
+
+p { 
+    color: #00c3ff; 
+    margin: 5px 0 0; 
+    text-shadow: 0 0 10px #00c3ff; 
+    font-size: 1.2rem; 
+}
+
+canvas { 
+    display: block; 
+}
+
+/* Modal Style */
+#modal { 
+    display: none; 
+    position: fixed; 
+    top: 50%; 
+    left: 50%; 
+    transform: translate(-50%, -50%); 
+    background: rgba(0, 10, 20, 0.95); 
+    border: 2px solid #00f2ff; 
+    padding: 40px; 
+    text-align: center;
+    box-shadow: 0 0 30px #00f2ff; 
+    z-index: 100; 
+    color: white; 
+    width: 80%; 
+    max-width: 400px; 
+}
+
+#result-text { 
+    font-size: 1.8rem; 
+    margin-bottom: 20px; 
+    text-transform: uppercase; 
+}
+
+input { 
+    padding: 12px; 
+    width: 100%; 
+    box-sizing: border-box; 
+    background: transparent; 
+    border: 1px solid #00f2ff; 
+    color: #00f2ff; 
+    margin-bottom: 15px; 
+}
+
+button { 
+    background: #00f2ff; 
+    border: none; 
+    padding: 12px 25px; 
+    color: #000; 
+    font-weight: bold; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+}
+
+/* Mobile Controls */
+#controls { 
+    position: fixed; 
+    bottom: 30px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    display: none; 
+    grid-template-columns: repeat(3, 60px); 
+    gap: 10px; 
+}
+
+.btn { 
+    width: 60px; 
+    height: 60px; 
+    background: rgba(0, 242, 255, 0.2); 
+    border: 1px solid #00f2ff; 
+    color: #00f2ff; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+    border-radius: 5px; 
+    user-select: none;
+}
+
+@media (max-width: 768px) { 
+    #controls { display: grid; } 
+    h1 { font-size: 1.5rem; } 
+}
